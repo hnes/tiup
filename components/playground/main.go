@@ -119,6 +119,7 @@ const (
 	dbBinpath      = "db.binpath"
 	kvBinpath      = "kv.binpath"
 	pdBinpath      = "pd.binpath"
+	pdMicroConfig  = "pd.micro"
 	tiflashBinpath = "tiflash.binpath"
 	ticdcBinpath   = "ticdc.binpath"
 	kvcdcBinpath   = "kvcdc.binpath"
@@ -351,6 +352,7 @@ If you'd like to use a TiDB version other than %s, cancel and retry with the fol
 	rootCmd.Flags().String(dbBinpath, defaultOptions.TiDB.BinPath, "TiDB instance binary path")
 	rootCmd.Flags().String(kvBinpath, defaultOptions.TiKV.BinPath, "TiKV instance binary path")
 	rootCmd.Flags().String(pdBinpath, defaultOptions.PD.BinPath, "PD instance binary path")
+	rootCmd.Flags().String(pdMicroConfig, defaultOptions.PD.Micro, "PD instance binary path")
 	rootCmd.Flags().String(tiflashBinpath, defaultOptions.TiFlash.BinPath, "TiFlash instance binary path")
 	rootCmd.Flags().String(ticdcBinpath, defaultOptions.TiCDC.BinPath, "TiCDC instance binary path")
 	rootCmd.Flags().String(kvcdcBinpath, defaultOptions.TiKVCDC.BinPath, "TiKV-CDC instance binary path")
@@ -469,6 +471,8 @@ func populateOpt(flagSet *pflag.FlagSet) (err error) {
 			options.TiKV.BinPath = flag.Value.String()
 		case pdBinpath:
 			options.PD.BinPath = flag.Value.String()
+		case pdMicroConfig:
+			options.PD.Micro = flag.Value.String()
 		case tiflashBinpath:
 			options.TiFlash.BinPath = flag.Value.String()
 		case ticdcBinpath:

@@ -30,6 +30,7 @@ type Config struct {
 	Port       int    `yaml:"port"`
 	UpTimeout  int    `yaml:"up_timeout"`
 	Version    string `yaml:"version"`
+	Micro      string `yaml:"micro"`
 }
 
 type instance struct {
@@ -104,10 +105,12 @@ func logIfErr(err error) {
 func pdEndpoints(pds []*PDInstance, isHTTP bool) []string {
 	var endpoints []string
 	for _, pd := range pds {
-		if isHTTP {
-			endpoints = append(endpoints, "http://"+utils.JoinHostPort(AdvertiseHost(pd.Host), pd.StatusPort))
-		} else {
-			endpoints = append(endpoints, utils.JoinHostPort(AdvertiseHost(pd.Host), pd.StatusPort))
+		if pd.micro.IsNone() || pd.micro.IsContainAPIMode() {
+			if isHTTP {
+				endpoints = append(endpoints, "http://"+utils.JoinHostPort(AdvertiseHost(pd.Host), pd.StatusPort))
+			} else {
+				endpoints = append(endpoints, utils.JoinHostPort(AdvertiseHost(pd.Host), pd.StatusPort))
+			}
 		}
 	}
 	return endpoints

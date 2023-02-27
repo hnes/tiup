@@ -462,12 +462,13 @@ func (p *Playground) addWaitInstance(inst instance.Instance) {
 }
 
 func (p *Playground) handleScaleOut(w io.Writer, cmd *Command) error {
+	fmt.Println("hack: handleScaleOut enter")
 	// Ignore Config.Num, always one command as scale out one instance.
 	err := p.sanitizeComponentConfig(cmd.ComponentID, &cmd.Config)
 	if err != nil {
 		return err
 	}
-	inst, err := p.addInstance(cmd.ComponentID, cmd.Config)
+	inst, err := p.addInstance(cmd.ComponentID, cmd.Config, nil)
 	if err != nil {
 		return err
 	}
@@ -630,7 +631,7 @@ func (p *Playground) enableBinlog() bool {
 	return p.bootOptions.Pump.Num > 0
 }
 
-func (p *Playground) addInstance(componentID string, cfg instance.Config) (ins instance.Instance, err error) {
+func (p *Playground) addInstance(componentID string, cfg instance.Config, microCfgs []instance.PDMicroConfig) (ins instance.Instance, err error) {
 	if cfg.BinPath != "" {
 		cfg.BinPath, err = getAbsolutePath(cfg.BinPath)
 		if err != nil {
@@ -660,7 +661,14 @@ func (p *Playground) addInstance(componentID string, cfg instance.Config) (ins i
 
 	switch componentID {
 	case spec.ComponentPD:
-		inst := instance.NewPDInstance(cfg.BinPath, dir, host, cfg.ConfigPath, id, cfg.Port)
+		result, myErr := instance.ParsePDMicroConfig(cfg.Micro)
+		fmt.Println("pd.addInstance", cfg.Micro, "unmarshal", result, myErr)
+		var microCfg instance.PDMicroConfig
+		if len(microCfgs) > 0 {
+			microCfg = microCfgs[0]
+		}
+		fmt.Println("pd.addInstance microCfg", microCfg)
+		inst := instance.NewPDInstance(cfg.BinPath, dir, host, cfg.ConfigPath, id, cfg.Port, microCfg)
 		ins = inst
 		if p.booted {
 			inst.Join(p.pds)
@@ -796,6 +804,7 @@ func (p *Playground) bindVersion(comp string, version string) (bindVersion strin
 }
 
 func (p *Playground) bootCluster(ctx context.Context, env *environment.Environment, options *BootOptions) error {
+	fmt.Println("hack: bootCluster enter")
 	for _, cfg := range []*instance.Config{
 		&options.PD,
 		&options.TiDB,
@@ -845,8 +854,25 @@ func (p *Playground) bootCluster(ctx context.Context, env *environment.Environme
 	}
 
 	for _, inst := range instances {
+		if inst.comp == spec.ComponentPD {
+			microConfigs := instance.MustParsePDMicroConfig(inst.Micro)
+			fmt.Println("pd.addInstance", inst.Micro, "unmarshal", microConfigs)
+			if len(microConfigs) == 0 {
+				goto NORMAL
+			}
+			for idx := range microConfigs {
+				for range make([]struct{}, microConfigs[idx].Amount) {
+					_, err := p.addInstance(inst.comp, inst.Config, microConfigs[idx:])
+					if err != nil {
+						return err
+					}
+				}
+			}
+			continue
+		}
+	NORMAL:
 		for i := 0; i < inst.Num; i++ {
-			_, err := p.addInstance(inst.comp, inst.Config)
+			_, err := p.addInstance(inst.comp, inst.Config, nil)
 			if err != nil {
 				return err
 			}
