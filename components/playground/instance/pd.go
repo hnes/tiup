@@ -59,6 +59,9 @@ func (m *PDMicroConfig) IsContainTSOMode() bool {
 
 func ParsePDMicroConfig(s string) ([]PDMicroConfig, error) {
 	var result []PDMicroConfig
+	if len(s) <= 0 {
+		return result, nil
+	}
 	err := json.Unmarshal([]byte(s), &result)
 	if err == nil {
 		for _, cfg := range result {
@@ -164,20 +167,21 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 			}
 		}
 		args = append(args, []string{
-			"services " + string(mod),
-			"--name=" + uid,
-			fmt.Sprintf("--log-file=%s", inst.LogFile()),
+			"services",
+			string(mod),
+			//"--name=" + uid,
+			//fmt.Sprintf("--log-file=%s", inst.LogFile()),
 		}...)
 		if inst.micro.IsContainAPIMode() {
 			args = append(args, []string{
+				"--name=" + uid,
 				fmt.Sprintf("--data-dir=%s", filepath.Join(inst.Dir, "data")),
 				fmt.Sprintf("--peer-urls=http://%s", utils.JoinHostPort(inst.Host, inst.Port)),
 				fmt.Sprintf("--advertise-peer-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.Port)),
 				fmt.Sprintf("--client-urls=http://%s", utils.JoinHostPort(inst.Host, inst.StatusPort)),
 				fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
 			}...)
-		}
-		if inst.micro.IsContainResourceManagerMode() || inst.micro.IsContainTSOMode() {
+		} else {
 			args = append(args, []string{
 				//fmt.Sprintf("--data-dir=%s", filepath.Join(inst.Dir, "data")),
 				fmt.Sprintf("--listen-addr=%s", utils.JoinHostPort(inst.Host, inst.Port)),
@@ -223,9 +227,8 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 					}
 				}
 				args = append(args, fmt.Sprintf("--initial-cluster=%s", strings.Join(endpoints, ",")))
-			}
-			if inst.micro.IsContainResourceManagerMode() || inst.micro.IsContainTSOMode() {
-				args = append(args, fmt.Sprintf("--backend-endpoints=%s", strings.Join(pdEndpoints(inst.initEndpoints, false), ",")))
+			} else {
+				args = append(args, fmt.Sprintf("--backend-endpoints=%s", strings.Join(pdEndpoints(inst.initEndpoints, true), ",")))
 			}
 		} else {
 			log.Fatalf("not support join yet")
