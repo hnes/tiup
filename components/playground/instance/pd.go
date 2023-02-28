@@ -130,7 +130,7 @@ func (inst *PDInstance) Name() string {
 
 // Start calls set inst.cmd and Start
 func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error {
-	fmt.Println("PDInstance start", inst.micro.APIFlag, inst.micro.ResourceManagerFlag, inst.micro.TSOFlag)
+	//fmt.Println("PDInstance start", inst.micro.APIFlag, inst.micro.ResourceManagerFlag, inst.micro.TSOFlag)
 	uid := inst.Name()
 	args := []string{}
 	if inst.micro.IsNone() {

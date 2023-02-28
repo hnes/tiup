@@ -661,13 +661,13 @@ func (p *Playground) addInstance(componentID string, cfg instance.Config, microC
 
 	switch componentID {
 	case spec.ComponentPD:
-		result, myErr := instance.ParsePDMicroConfig(cfg.Micro)
-		fmt.Println("pd.addInstance", cfg.Micro, "unmarshal", result, myErr)
+		//result, myErr := instance.ParsePDMicroConfig(cfg.Micro)
+		//fmt.Println("pd.addInstance", cfg.Micro, "unmarshal", result, myErr)
 		var microCfg instance.PDMicroConfig
 		if len(microCfgs) > 0 {
 			microCfg = microCfgs[0]
 		}
-		fmt.Println("pd.addInstance microCfg", microCfg)
+		//fmt.Println("pd.addInstance microCfg", microCfg)
 		inst := instance.NewPDInstance(cfg.BinPath, dir, host, cfg.ConfigPath, id, cfg.Port, microCfg)
 		ins = inst
 		if p.booted {
@@ -804,7 +804,7 @@ func (p *Playground) bindVersion(comp string, version string) (bindVersion strin
 }
 
 func (p *Playground) bootCluster(ctx context.Context, env *environment.Environment, options *BootOptions) error {
-	fmt.Println("hack: bootCluster enter")
+	//fmt.Println("hack: bootCluster enter")
 	for _, cfg := range []*instance.Config{
 		&options.PD,
 		&options.TiDB,
@@ -856,7 +856,7 @@ func (p *Playground) bootCluster(ctx context.Context, env *environment.Environme
 	for _, inst := range instances {
 		if inst.comp == spec.ComponentPD {
 			microConfigs := instance.MustParsePDMicroConfig(inst.Micro)
-			fmt.Println("pd.addInstance", inst.Micro, "unmarshal", microConfigs)
+			//fmt.Println("pd.addInstance", inst.Micro, "unmarshal", microConfigs)
 			if len(microConfigs) == 0 {
 				goto NORMAL
 			}
