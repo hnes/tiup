@@ -143,7 +143,7 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 			fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
 			fmt.Sprintf("--log-file=%s", inst.LogFile()),
 		}
-	} else if inst.micro.IsAPIAndResourceManagerMode() || inst.micro.IsTSOOnly() {
+	} else {
 		mod := []byte{}
 		if inst.micro.IsContainAPIMode() {
 			if len(mod) > 0 {
@@ -190,8 +190,6 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 				//fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
 			}...)
 		}
-	} else {
-		log.Fatalf("playground don't support this pd micro mode yet: %v", inst.micro)
 	}
 
 	if inst.ConfigPath != "" {
