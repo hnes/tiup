@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -34,7 +35,7 @@ type process struct {
 func (p *process) Start() error {
 	// fmt.Printf("Starting `%s`: %s", filepath.Base(p.cmd.Path), strings.Join(p.cmd.Args, " "))
 	p.startTime = time.Now()
-	//fmt.Println("hack: process.Start:\n", p.cmd.String())
+	fmt.Println("hack: process.Start:\n", p.cmd.String())
 	return p.cmd.Start()
 }
 
