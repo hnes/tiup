@@ -144,6 +144,9 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 			fmt.Sprintf("--log-file=%s", inst.LogFile()),
 		}
 	} else {
+		if !inst.micro.IsContainAPIMode() && inst.micro.IsContainResourceManagerMode() && inst.micro.IsContainTSOMode() {
+			log.Fatalf("not support 'services tso,resource-manager' yet")
+		}
 		mod := []byte{}
 		if inst.micro.IsContainAPIMode() {
 			if len(mod) > 0 {
@@ -182,13 +185,23 @@ func (inst *PDInstance) Start(ctx context.Context, version utils.Version) error 
 				fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
 			}...)
 		} else {
-			args = append(args, []string{
-				//fmt.Sprintf("--data-dir=%s", filepath.Join(inst.Dir, "data")),
-				fmt.Sprintf("--listen-addr=%s", utils.JoinHostPort(inst.Host, inst.Port)),
-				//fmt.Sprintf("--advertise-peer-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.Port)),
-				//fmt.Sprintf("--client-urls=http://%s", utils.JoinHostPort(inst.Host, inst.StatusPort)),
-				//fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
-			}...)
+			if inst.micro.IsContainResourceManagerMode() {
+				args = append(args, []string{
+					//fmt.Sprintf("--data-dir=%s", filepath.Join(inst.Dir, "data")),
+					fmt.Sprintf("--listen-addr=http://%s", utils.JoinHostPort(inst.Host, inst.Port)),
+					//fmt.Sprintf("--advertise-peer-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.Port)),
+					//fmt.Sprintf("--client-urls=http://%s", utils.JoinHostPort(inst.Host, inst.StatusPort)),
+					//fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
+				}...)
+			} else { // if inst.micro.IsContainTSOMode()
+				args = append(args, []string{
+					//fmt.Sprintf("--data-dir=%s", filepath.Join(inst.Dir, "data")),
+					fmt.Sprintf("--listen-addr=%s", utils.JoinHostPort(inst.Host, inst.Port)),
+					//fmt.Sprintf("--advertise-peer-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.Port)),
+					//fmt.Sprintf("--client-urls=http://%s", utils.JoinHostPort(inst.Host, inst.StatusPort)),
+					//fmt.Sprintf("--advertise-client-urls=http://%s", utils.JoinHostPort(AdvertiseHost(inst.Host), inst.StatusPort)),
+				}...)
+			}
 		}
 	}
 
